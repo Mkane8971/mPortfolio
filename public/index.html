@@ -1030,11 +1030,13 @@ async function fetchProfile() {
     const eduItem = document.createElement('div');
     eduItem.className = 'edu-item';
     const details = edu.details || edu.detail || edu.notes || edu.note || '';
+    const degree = edu.degree || edu.program || '';
+    const status = edu.status || edu.completion || '';
     eduItem.innerHTML = `
-      <h4>${edu.degree}</h4>
+      <h4>${degree}</h4>
       <div class="institution">${edu.institution}</div>
       ${details ? `<div style="color:#666;margin-top:0.5rem;">${details}</div>` : ''}
-      ${edu.status ? `<div style="color:#667eea;font-weight:600;margin-top:0.25rem;">${edu.status}</div>` : ''}
+      ${status ? `<div style="color:#667eea;font-weight:600;margin-top:0.25rem;">${status}</div>` : ''}
     `;
     eduDiv.appendChild(eduItem);
   });

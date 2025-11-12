@@ -208,11 +208,13 @@ app.get('/api/profile', async (req, res) => {
     // Prefer "details" but tolerate common variants from older data (detail, notes, note)
     row.education = toArr(row.education).filter(Boolean).map(e => {
       const detailsVal = e?.details ?? e?.detail ?? e?.notes ?? e?.note ?? '';
+      const degreeVal = e?.degree ?? e?.program; // legacy: program
+      const statusVal = e?.status ?? e?.completion; // legacy: completion
       return {
-        degree: normStr(e?.degree),
+        degree: normStr(degreeVal),
         institution: normStr(e?.institution),
         details: detailsVal ? normStr(detailsVal) : '',
-        status: e?.status ? normStr(e.status) : ''
+        status: statusVal ? normStr(statusVal) : ''
       };
     });
     row.projects = toArr(row.projects).filter(Boolean).map(p => ({
