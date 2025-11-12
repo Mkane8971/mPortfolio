@@ -1012,9 +1012,10 @@ async function fetchProfile() {
   (data.experience || []).forEach(job => {
     const jobDiv = document.createElement('div');
     jobDiv.className = 'job';
+    const meta = [job.company, job.period, job.location].filter(Boolean).join(' | ');
     jobDiv.innerHTML = `
       <h3>${job.title}</h3>
-      <div class="meta">${job.company} | ${job.period} | ${job.location}</div>
+      <div class="meta">${meta}</div>
       <ul>
         ${(Array.isArray(job.responsibilities) ? job.responsibilities : []).map(r => `<li>${r}</li>`).join('')}
       </ul>

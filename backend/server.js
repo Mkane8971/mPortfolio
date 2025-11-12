@@ -190,6 +190,30 @@ app.get('/api/profile', async (req, res) => {
         try { row[f] = JSON.parse(row[f]); } catch (_) {}
       }
     });
+    // Normalize shapes to avoid undefined showing in UI
+    const toArr = (v) => Array.isArray(v) ? v : [];
+    const normStr = (v) => (typeof v === 'string' ? v : (v == null ? '' : String(v)));
+    row.skills = toArr(row.skills).filter(Boolean).map(normStr);
+    row.experience = toArr(row.experience).filter(Boolean).map(e => ({
+      title: normStr(e?.title),
+      company: normStr(e?.company),
+      period: normStr(e?.period),
+      location: normStr(e?.location),
+      responsibilities: toArr(e?.responsibilities).filter(Boolean).map(normStr)
+    }));
+    row.education = toArr(row.education).filter(Boolean).map(e => ({
+      degree: normStr(e?.degree),
+      institution: normStr(e?.institution),
+      details: e?.details ? normStr(e.details) : '',
+      status: e?.status ? normStr(e.status) : ''
+    }));
+    row.projects = toArr(row.projects).filter(Boolean).map(p => ({
+      name: normStr(p?.name),
+      organization: p?.organization ? normStr(p.organization) : '',
+      tech: p?.tech ? normStr(p.tech) : '',
+      description: p?.description ? normStr(p.description) : ''
+    }));
+
     res.json(row);
   } catch (err) {
     console.error(err);
