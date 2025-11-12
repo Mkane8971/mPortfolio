@@ -129,6 +129,25 @@ export async function initDb() {
       END
     `);
 
+    // Create profile_skill_links table to explicitly link and order display skills, decoupling from free-form JSON
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='profile_skill_links' AND xtype='U')
+      BEGIN
+        CREATE TABLE profile_skill_links (
+          id INT IDENTITY(1,1) PRIMARY KEY,
+          profile_id INT NOT NULL,
+          skill_id INT NOT NULL,
+          display_order INT NOT NULL DEFAULT 0,
+          is_primary BIT NOT NULL DEFAULT 0,
+          created_at DATETIME2 DEFAULT GETDATE(),
+          CONSTRAINT FK_profile_skill_links_profile FOREIGN KEY (profile_id) REFERENCES portfolio_profile(id) ON DELETE CASCADE,
+          CONSTRAINT FK_profile_skill_links_skill FOREIGN KEY (skill_id) REFERENCES profile_skills(id) ON DELETE CASCADE,
+          CONSTRAINT UQ_profile_skill_links UNIQUE (profile_id, skill_id)
+        );
+        CREATE INDEX IX_profile_skill_links_order ON profile_skill_links(profile_id, display_order);
+      END
+    `);
+
     // Seed portfolio profile if not exists
     const checkProfile = await pool.request().query('SELECT COUNT(*) as cnt FROM portfolio_profile WHERE id = 1');
     if (checkProfile.recordset[0].cnt === 0) {
@@ -170,6 +189,23 @@ export async function initDb() {
             .query(`INSERT INTO profile_skills (profile_id, name, origin, started_year, category, notes) VALUES (@profile_id, @name, @origin, @started_year, @category, @notes)`);
         }
         console.log('✓ Seeded profile_skills metadata');
+      }
+      // Seed link table if empty (map each skill to a link with ordering)
+      const linkTableExists = await pool.request().query("SELECT COUNT(*) AS cnt FROM sysobjects WHERE name='profile_skill_links' AND xtype='U'");
+      if (linkTableExists.recordset[0].cnt === 1) {
+        const linkCount = await pool.request().query('SELECT COUNT(*) AS cnt FROM profile_skill_links WHERE profile_id = 1');
+        if (linkCount.recordset[0].cnt === 0) {
+          const skillsForLinks = await pool.request().query('SELECT id, name FROM profile_skills WHERE profile_id = 1 ORDER BY name ASC');
+          let order = 0;
+          for (const r of skillsForLinks.recordset) {
+            await pool.request()
+              .input('profile_id', sql.Int, 1)
+              .input('skill_id', sql.Int, r.id)
+              .input('display_order', sql.Int, order++)
+              .query('INSERT INTO profile_skill_links (profile_id, skill_id, display_order) VALUES (@profile_id, @skill_id, @display_order)');
+          }
+          console.log('✓ Seeded profile_skill_links ordering');
+        }
       }
     }
 

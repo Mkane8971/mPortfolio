@@ -1038,7 +1038,9 @@ async function fetchProfile() {
     const li = document.createElement('li');
     li.textContent = name;
     li.className = 'skill-item';
-    const s = meta[name];
+    // Case-insensitive lookup to handle naming mismatches
+    const key = Object.keys(meta).find(k => k.toLowerCase() === String(name).toLowerCase());
+    const s = key ? meta[key] : null;
     if (s) {
       const years = s.years_experience != null ? `${s.years_experience} year${s.years_experience === 1 ? '' : 's'}` : '';
       const parts = [];

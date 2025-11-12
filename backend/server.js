@@ -194,12 +194,20 @@ app.get('/api/profile', async (req, res) => {
     // Normalize shapes so the frontend rendering always works
     const normalized = { ...row };
 
-    // Skills: always return display skills as an array of names, plus skills_meta map for tooltips
-    // Build meta map from profile_skills
+    // Skills: use relational link table for display order and metadata
+    let skillsList = [];
     let skillsMeta = {};
     try {
-      const skillRows = await pool.request().query('SELECT name, origin, started_year, category, notes FROM profile_skills WHERE profile_id = 1');
-      skillsMeta = Object.fromEntries(skillRows.recordset.map(r => [
+      const resSkills = await pool.request().query(`
+        SELECT ps.name, ps.origin, ps.started_year, ps.category, ps.notes
+        FROM profile_skill_links l
+        JOIN profile_skills ps ON ps.id = l.skill_id
+        WHERE l.profile_id = 1
+        ORDER BY l.display_order, ps.name
+      `);
+      const rows = resSkills.recordset;
+      skillsList = rows.map(r => r.name);
+      skillsMeta = Object.fromEntries(rows.map(r => [
         r.name,
         {
           origin: r.origin,
@@ -210,15 +218,18 @@ app.get('/api/profile', async (req, res) => {
         }
       ]));
     } catch (e) {
-      console.warn('Skill metadata query failed, falling back to legacy skills only:', e.message);
-    }
-
-    // Coerce skills to array of names for display
-    let skillsList = [];
-    if (Array.isArray(normalized.skills)) {
-      skillsList = normalized.skills.map(s => (typeof s === 'object' && s !== null ? (s.name || '') : String(s))).filter(Boolean);
-    } else if (typeof normalized.skills === 'string' && normalized.skills.trim()) {
-      skillsList = [normalized.skills.trim()];
+      console.warn('Skill link/metadata query failed, attempting fallback to profile_skills only:', e.message);
+      try {
+        const resOnly = await pool.request().query('SELECT name, origin, started_year, category, notes FROM profile_skills WHERE profile_id = 1 ORDER BY name');
+        const rows = resOnly.recordset;
+        skillsList = rows.map(r => r.name);
+        skillsMeta = Object.fromEntries(rows.map(r => [ r.name, {
+          origin: r.origin, started_year: r.started_year, category: r.category, notes: r.notes,
+          years_experience: r.started_year ? (new Date().getFullYear() - r.started_year) : null
+        }]));
+      } catch (e2) {
+        console.warn('Fallback skills query also failed:', e2.message);
+      }
     }
     normalized.skills = skillsList;
     normalized.skills_meta = skillsMeta;
