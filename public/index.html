@@ -576,8 +576,102 @@
     </div>
   </div>
 
-    <!-- Main App container: injected after successful login for security -->
-    <div id="mainApp" style="display:none;"></div>
+    <!-- Main App (hidden until login) -->
+    <div id="mainApp" style="display: none;">
+      <!-- Navbar -->
+      <nav class="navbar">
+        <div class="welcome">Welcome, <span id="userName"></span>! I am happy to connect with your team, thank you for stopping by.</div>
+        <div class="nav-links">
+          <a onclick="showPortfolio()" id="navPortfolio" class="active">Portfolio</a>
+          <a onclick="showAdmin()" id="navAdmin" style="display: none;">Admin</a>
+          <a onclick="logout()">Logout</a>
+        </div>
+      </nav>
+
+      <!-- Portfolio Page -->
+      <div id="portfolioPage" class="portfolio-page">
+        <div class="container">
+          <div class="header">
+            <h1 id="name"></h1>
+            <h3 id="title"></h3>
+          </div>
+          <div class="content">
+            <section>
+              <h2>👋 About Me</h2>
+              <div class="summary-box">
+                <p id="summary"></p>
+              </div>
+            </section>
+          
+            <section>
+              <h2>💼 Professional Experience</h2>
+              <div id="experience"></div>
+            </section>
+
+            <section>
+              <h2>🛠️ Technical Skills & Expertise</h2>
+              <ul id="skills"></ul>
+            </section>
+
+            <section>
+              <h2>🎓 Education & Certifications</h2>
+              <div id="education"></div>
+            </section>
+
+            <section>
+              <h2>🚀 Featured Projects & Leadership</h2>
+              <div id="projects"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Page -->
+      <div id="adminPage" class="admin-page hidden">
+        <div class="admin-controls">
+          <h2>Create Employer Login Code</h2>
+          <div class="form-group">
+            <label>Company/Employer Name</label>
+            <input id="companyName" type="text" placeholder="e.g., ABC Corp" />
+          </div>
+          <div class="form-group">
+            <label>Login Code</label>
+            <input id="companyCode" type="text" placeholder="e.g., abc-2024" />
+          </div>
+          <button onclick="createCompany()">Create Login Code</button>
+        </div>
+
+        <div class="admin-table-container">
+          <h2>Employer Login Codes</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Company/Employer</th>
+                <th>Login Code</th>
+                <th>Status</th>
+                <th>Chat Questions</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="companiesTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chat Log Modal -->
+      <div id="chatModal" class="chat-modal">
+        <div class="chat-modal-content">
+          <div class="chat-modal-header">
+            <h3 id="chatModalTitle">Chat History</h3>
+            <button class="chat-modal-close" onclick="closeChatModal()">×</button>
+          </div>
+          <div class="chat-modal-body" id="chatModalBody">
+            <!-- Chat messages will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- NOTE: The portfolio/admin HTML is no longer pre-rendered; it will be injected via renderApp() after login. -->
           </section>
 
