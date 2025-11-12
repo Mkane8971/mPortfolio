@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .header h3 { font-size: 1.3rem; opacity: 0.9; font-weight: 400; }
+    .content { padding: 2rem; }
+    section { margin-bottom: 2rem; }
+    h2 { color: #667eea; margin-bottom: 1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; }
+    h3 { color: #764ba2; margin: 1.5rem 0 0.75rem; }
+    p { line-height: 1.6; color: #444; }
+    ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    ul li { 
+      background: #f0f0f0; 
+      padding: 0.5rem 1rem; 
+      border-radius: 20px; 
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .admin { 
+      background: #f8f9fa; 
+      padding: 1.5rem; 
+      margin-bottom: 2rem; 
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    input, textarea, button { 
+      padding: 0.75rem; 
+      margin: 0.25rem 0.5rem 0.25rem 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: 600;
+    }
+    button:hover { background: #5568d3; }
+    button:active { transform: scale(0.98); }
+    .delete-btn {
+      background: #dc3545;
+    }
+    .delete-btn:hover { background: #c82333; }
+    textarea { width: 100%; min-height: 100px; resize: vertical; font-family: inherit; }
+    .chat { 
+      border: 1px solid #ddd; 
+      padding: 1.5rem; 
+      margin-top: 2rem; 
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    #chatLog { 
+      max-height: 400px; 
+      overflow-y: auto; 
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+    }
+    .msg-user { 
+      color: #333; 
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: #e3f2fd;
+      border-radius: 8px;
+      border-left: 3px solid #2196f3;
+    }
+    .msg-assistant { 
+      color: #1b5e20; 
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border-left: 3px solid #4caf50;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td { 
+      padding: 0.75rem; 
+      text-align: left; 
+      border-bottom: 1px solid #ddd;
+    }
+    th { 
+      background: #667eea; 
+      color: white;
+      font-weight: 600;
+    }
+    .login-section {
+      background: #fff3cd;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+      border-left: 4px solid #ffc107;
+    }
+    .admin-login {
+      background: #d1ecf1;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+      border-left: 4px solid #17a2b8;
+    }
+    .status { 
+      margin-left: 1rem; 
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .job { 
+      margin-bottom: 2rem; 
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    .job h3 { color: #333; margin-bottom: 0.5rem; }
+    .job .meta { color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
+    .job ul { list-style: disc; margin-left: 1.5rem; display: block; }
+    .job ul li { 
+      background: none; 
+      padding: 0.25rem 0; 
+      border-radius: 0;
+      color: #444;
+      margin-bottom: 0.5rem;
+    }
+    .edu-item {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    .edu-item h4 { color: #667eea; margin-bottom: 0.25rem; }
+    .edu-item .institution { color: #666; font-style: italic; }
+    .project-card {
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 8px;
+      border-left: 4px solid #764ba2;
+    }
+    .project-card h4 { color: #333; margin-bottom: 0.5rem; }
+    .project-card .tech { 
+      color: #667eea; 
+      font-size: 0.9rem; 
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    
+    /* Login Gate */
+    .login-gate {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .login-box {
+      background: white;
+      padding: 3rem;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+    .login-box h2 { color: #667eea; margin-bottom: 1rem; }
+    .disclaimer {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      text-align: left;
+      font-size: 0.9rem;
+      color: #856404;
+    }
+    .disclaimer strong { display: block; margin-bottom: 0.5rem; color: #721c24; }
+    
+    /* Chat Bubble */
+    .chat-bubble-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    .chat-bubble-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .chat-bubble-btn:hover {
+      transform: scale(1.1);
+    }
+    .chat-window {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 380px;
+      height: 500px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-window.open {
+      display: flex;
+    }
+    .chat-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background: #f8f9fa;
+    }
+    .chat-input-area {
+      padding: 1rem;
+      border-top: 1px solid #ddd;
+      background: white;
+    }
+    .chat-input-area textarea {
+      width: 100%;
+      min-height: 60px;
+      margin-bottom: 0.5rem;
+      resize: none;
+    }
+    .chat-input-area button {
+      width: 100%;
+    }
+    .msg-user { 
+      color: #333; 
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: #e3f2fd;
+      border-radius: 8px;
+      border-left: 3px solid #2196f3;
+      word-wrap: break-word;
+    }
+    .msg-assistant { 
+      color: #1b5e20; 
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border-left: 3px solid #4caf50;
+      word-wrap: break-word;
+    }
+    
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .navbar .welcome {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .navbar .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .navbar .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    .navbar .nav-links a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .navbar .nav-links a.active {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* Admin Page */
+    .admin-page {
+      display: none;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .admin-page.active {
+      display: block;
+    }
+    .admin-controls {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .admin-table {
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .admin-table table {
+      width: 100%;
+    }
+    .admin-table th {
+      background: #667eea;
+      color: white;
+      padding: 1rem;
+      text-align: left;
+    }
+    .admin-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status-badge.active {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status-badge.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .action-btn {
+      padding: 0.4rem 0.8rem;
+      margin: 0 0.25rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .action-btn.toggle {
+      background: #ffc107;
+      color: #333;
+    }
+    .action-btn.toggle:hover {
+      background: #e0a800;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Gate -->
+  <div id="loginGate" class="login-gate">
+    <div class="login-box">
+      <h2>🔐 Access Portfolio</h2>
+      <div class="disclaimer">
+        <strong>⚠️ Recruiter/Employer Access Only</strong>
+        This portfolio contains professional information intended exclusively for recruiters, hiring managers, and potential employers reviewing Matthew Kane's qualifications. By entering a login code, you confirm you are accessing this information for legitimate employment consideration purposes.
+      </div>
+      <div style="margin: 2rem 0;">
+        <input id="accessCode" type="text" placeholder="Enter your company login code" style="width: 100%; padding: 1rem; font-size: 1rem; margin-bottom: 1rem;" />
+        <button onclick="attemptLogin()" style="width: 100%; padding: 1rem; font-size: 1rem;">Access Portfolio</button>
+        <div id="loginError" style="color: #dc3545; margin-top: 1rem; display: none;"></div>
+      </div>
+      <p style="font-size: 0.9rem; color: #666;">
+        Don't have a code? Contact Matthew at <a href="mailto:Mkane8971@gmail.com" style="color: #667eea;">Mkane8971@gmail.com</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Portfolio (hidden until login) -->
+  <div id="mainContent" style="display: none;">
+    <div class="container">
+    <div class="header">
+      <h1 id="name"></h1>
+      <h3 id="title"></h3>
+    </div>
+    <div class="content">
+      <section>
+        <p id="summary" style="font-size: 1.1rem; line-height: 1.8;"></p>
+      </section>
+      
+      <section>
+        <h2>💼 Professional Experience</h2>
+        <div id="experience"></div>
+      </section>
+
+      <section>
+        <h2>🛠️ Technical Skills</h2>
+        <ul id="skills"></ul>
+      </section>
+
+      <section>
+        <h2>🎓 Education & Certifications</h2>
+        <div id="education"></div>
+      </section>
+
+      <section>
+        <h2>🚀 Recent Projects</h2>
+        <div id="projects"></div>
+      </section>
+
+      <div id="adminPanel" class="admin" style="display:none;">
+        <h2>🔐 Admin Panel</h2>
+        <div>
+          <h3>Create Company Login Code</h3>
+          <input id="companyName" placeholder="Company name" />
+          <input id="companyCode" placeholder="Login code" />
+          <button onclick="createCompany()">Create</button>
+        </div>
+        <h3>Existing Codes</h3>
+        <table id="companiesTable"></table>
+      </div>
+
+      <div class="login-section">
+        <h3>🏢 Company Login (Optional)</h3>
+        <input id="loginCodeInput" placeholder="Enter login code" />
+        <button onclick="validateCode()">Validate</button>
+        <span id="loginStatus" class="status"></span>
+      </div>
+
+      <div class="admin-login">
+        <h3>� Admin Login</h3>
+        <input id="adminPassword" type="password" placeholder="Admin password" />
+        <button onclick="adminLogin()">Login</button>
+        <span id="adminStatus" class="status"></span>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Chat Bubble -->
+  <div class="chat-bubble-container">
+    <button class="chat-bubble-btn" onclick="toggleChat()">💬</button>
+    <div id="chatWindow" class="chat-window">
+      <div class="chat-header">
+        <span>Ask About Matthew</span>
+        <button class="chat-close" onclick="toggleChat()">×</button>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-area">
+        <textarea id="chatInputBubble" placeholder="Ask about experience, skills, background..."></textarea>
+        <button onclick="sendChatBubble()">Send</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+let adminToken = null;
+let sessionId = null;
+const apiBase = '/api';
+let isLoggedIn = false;
+
+// Login gate functions
+async function attemptLogin() {
+  const code = document.getElementById('accessCode').value.trim();
+  const errorDiv = document.getElementById('loginError');
+  
+  if (!code) {
+    errorDiv.textContent = 'Please enter a login code';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${apiBase}/login-code`, { 
+      method: 'POST', 
+      headers: {'Content-Type': 'application/json'}, 
+      body: JSON.stringify({ code }) 
+    });
+    const data = await res.json();
+    
+    if (data.valid) {
+      isLoggedIn = true;
+      document.getElementById('loginGate').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      fetchProfile();
+    } else {
+      errorDiv.textContent = 'Invalid login code. Please contact Matthew for access.';
+      errorDiv.style.display = 'block';
+    }
+  } catch (err) {
+    errorDiv.textContent = 'Connection error. Please try again.';
+    errorDiv.style.display = 'block';
+  }
+}
+
+// Allow Enter key to submit login
+document.addEventListener('DOMContentLoaded', () => {
+  const accessCodeInput = document.getElementById('accessCode');
+  if (accessCodeInput) {
+    accessCodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') attemptLogin();
+    });
+  }
+});
+
+// Chat bubble functions
+function toggleChat() {
+  const chatWindow = document.getElementById('chatWindow');
+  chatWindow.classList.toggle('open');
+}
+
+function appendChatBubble(role, content) {
+  const div = document.createElement('div');
+  div.className = role === 'assistant' ? 'msg-assistant' : 'msg-user';
+  div.textContent = content;
+  document.getElementById('chatMessages').appendChild(div);
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+}
+
+async function sendChatBubble() {
+  const input = document.getElementById('chatInputBubble');
+  const text = input.value.trim();
+  if (!text) return;
+  appendChatBubble('user', text);
+  input.value='';
+  
+  try {
+    const res = await fetch(`${apiBase}/chat`, { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({ messages: [{ role:'user', content: text }], session_id: sessionId }) 
+    });
+    const data = await res.json();
+    sessionId = data.session_id;
+    appendChatBubble('assistant', data.reply);
+  } catch (err) {
+    appendChatBubble('assistant', 'Sorry, there was an error. Please try again.');
+  }
+}
+
+// Allow Enter key to send chat (Shift+Enter for new line)
+document.addEventListener('DOMContentLoaded', () => {
+  const chatInput = document.getElementById('chatInputBubble');
+  if (chatInput) {
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatBubble();
+      }
+    });
+  }
+});
+
+async function fetchProfile() {
+  const res = await fetch(`${apiBase}/profile`);
+  const data = await res.json();
+  document.getElementById('name').textContent = data.full_name;
+  document.getElementById('title').textContent = data.title;
+  document.getElementById('summary').textContent = data.summary;
+  
+  // Skills
+  const skillsUl = document.getElementById('skills');
+  skillsUl.innerHTML = '';
+  (data.skills || []).forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s; 
+    skillsUl.appendChild(li);
+  });
+
+  // Experience
+  const expDiv = document.getElementById('experience');
+  expDiv.innerHTML = '';
+  (data.experience || []).forEach(job => {
+    const jobDiv = document.createElement('div');
+    jobDiv.className = 'job';
+    jobDiv.innerHTML = `
+      <h3>${job.title}</h3>
+      <div class="meta">${job.company} | ${job.period} | ${job.location}</div>
+      <ul>
+        ${job.responsibilities.map(r => `<li>${r}</li>`).join('')}
+      </ul>
+    `;
+    expDiv.appendChild(jobDiv);
+  });
+
+  // Education
+  const eduDiv = document.getElementById('education');
+  eduDiv.innerHTML = '';
+  (data.education || []).forEach(edu => {
+    const eduItem = document.createElement('div');
+    eduItem.className = 'edu-item';
+    eduItem.innerHTML = `
+      <h4>${edu.degree}</h4>
+      <div class="institution">${edu.institution}</div>
+      ${edu.details ? `<div style="color:#666;margin-top:0.5rem;">${edu.details}</div>` : ''}
+      ${edu.status ? `<div style="color:#667eea;font-weight:600;margin-top:0.25rem;">${edu.status}</div>` : ''}
+    `;
+    eduDiv.appendChild(eduItem);
+  });
+
+  // Projects
+  const projDiv = document.getElementById('projects');
+  projDiv.innerHTML = '';
+  (data.projects || []).forEach(proj => {
+    const projCard = document.createElement('div');
+    projCard.className = 'project-card';
+    projCard.innerHTML = `
+      <h4>${proj.name}${proj.organization ? ` - ${proj.organization}` : ''}</h4>
+      ${proj.tech ? `<div class="tech">Tech Stack: ${proj.tech}</div>` : ''}
+      <p>${proj.description}</p>
+    `;
+    projDiv.appendChild(projCard);
+  });
+}
+
+async function adminLogin() {
+  const password = document.getElementById('adminPassword').value;
+  const res = await fetch(`${apiBase}/admin/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password }) });
+  const data = await res.json();
+  if (data.token) {
+    adminToken = data.token;
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('adminStatus').textContent = 'Logged in';
+    loadCompanies();
+  } else {
+    document.getElementById('adminStatus').textContent = data.error || 'Login failed';
+  }
+}
+
+async function loadCompanies() {
+  const res = await fetch(`${apiBase}/companies`);
+  const data = await res.json();
+  const tbl = document.getElementById('companiesTable');
+  tbl.innerHTML = '<tr><th>Name</th><th>Code</th><th>Actions</th></tr>';
+  data.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><input value="${c.name}" data-id="${c.id}" data-field="name" /></td>`+
+      `<td><input value="${c.login_code}" data-id="${c.id}" data-field="login_code" /></td>`+
+      `<td><button onclick="updateCompany(${c.id})">Save</button> <button class="delete-btn" onclick="deleteCompany(${c.id})">Delete</button></td>`;
+    tbl.appendChild(tr);
+  });
+}
+
+async function createCompany() {
+  const name = document.getElementById('companyName').value;
+  const login_code = document.getElementById('companyCode').value;
+  const res = await fetch(`${apiBase}/companies`, { method:'POST', headers:{'Content-Type':'application/json','x-admin-token':adminToken}, body: JSON.stringify({ name, login_code }) });
+  if (res.ok) {
+    document.getElementById('companyName').value='';
+    document.getElementById('companyCode').value='';
+    loadCompanies();
+  } else {
+    alert('Failed to create');
+  }
+}
+
+async function updateCompany(id) {
+  const nameEl = [...document.querySelectorAll(`input[data-id='${id}'][data-field='name']`)][0];
+  const codeEl = [...document.querySelectorAll(`input[data-id='${id}'][data-field='login_code']`)][0];
+  const res = await fetch(`${apiBase}/companies/${id}`, { method:'PUT', headers:{'Content-Type':'application/json','x-admin-token':adminToken}, body: JSON.stringify({ name: nameEl.value, login_code: codeEl.value }) });
+  if (!res.ok) alert('Update failed');
+}
+
+async function deleteCompany(id) {
+  const res = await fetch(`${apiBase}/companies/${id}`, { method:'DELETE', headers:{'x-admin-token':adminToken} });
+  if (res.ok) loadCompanies(); else alert('Delete failed');
+}
+
+async function validateCode() {
+  const code = document.getElementById('loginCodeInput').value;
+  const res = await fetch(`${apiBase}/login-code`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) });
+  const data = await res.json();
+  document.getElementById('loginStatus').textContent = data.valid ? 'Valid code' : 'Invalid';
+}
+
+// Remove old chat functions - now using bubble
+fetchProfile();
+
+</script>
+</body>
+</html>
