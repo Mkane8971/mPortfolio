@@ -11,101 +11,6 @@
       background: #f5f7fa;
       min-height: 100vh;
     }
-    
-    /* Login Gate */
-    .login-gate {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    }
-    .login-box {
-      background: white;
-      padding: 3rem;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-    }
-    .login-box h2 { color: #667eea; margin-bottom: 1rem; }
-    .disclaimer {
-      background: #fff3cd;
-      border: 2px solid #ffc107;
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1.5rem 0;
-      text-align: left;
-      font-size: 0.9rem;
-      color: #856404;
-    }
-    .disclaimer strong { display: block; margin-bottom: 0.5rem; color: #721c24; }
-    
-    /* Navbar */
-    .navbar {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .navbar .welcome {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    .navbar .nav-links {
-      display: flex;
-      gap: 1.5rem;
-    }
-    .navbar .nav-links a {
-      color: white;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      transition: background 0.3s;
-      cursor: pointer;
-    }
-    .navbar .nav-links a:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    .navbar .nav-links a.active {
-      background: rgba(255,255,255,0.3);
-    }
-    
-    /* Portfolio Page */
-    .portfolio-page {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 2rem;
-    }
-    .portfolio-page.hidden {
-      display: none;
-    }
-    .container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 3rem 2rem;
-      text-align: center;
-    }
-    .header h1 { 
-      font-size: 2.8rem; 
-      margin-bottom: 0.5rem; 
-      font-weight: 700;
-    }
     .header h3 { 
       font-size: 1.3rem; 
       opacity: 0.95; 
@@ -671,11 +576,82 @@
     </div>
   </div>
 
-  <!-- Main App (hidden until login) -->
-  <div id="mainApp" style="display: none;">
+    <!-- Main App container: injected after successful login for security -->
+    <div id="mainApp" style="display:none;"></div>
+    <!-- NOTE: The portfolio/admin HTML is no longer pre-rendered; it will be injected via renderApp() after login. -->
+          </section>
+
+          <section>
+            <h2>🚀 Featured Projects & Leadership</h2>
+            <div id="projects"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="adminPage" class="admin-page hidden">
+      <div class="admin-controls">
+        <h2>Create Employer Login Code</h2>
+        <div class="form-group">
+          <label>Company/Employer Name</label>
+          <input id="companyName" type="text" placeholder="e.g., ABC Corp" />
+        </div>
+        <div class="form-group">
+          <label>Login Code</label>
+          <input id="companyCode" type="text" placeholder="e.g., abc-2024" />
+        </div>
+        <button onclick="createCompany()">Create Login Code</button>
+      </div>
+
+      <div class="admin-table-container">
+        <h2>Employer Login Codes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Company/Employer</th>
+              <th>Login Code</th>
+              <th>Status</th>
+              <th>Chat Questions</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="companiesTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chat Log Modal -->
+    <div id="chatModal" class="chat-modal">
+      <div class="chat-modal-content">
+        <div class="chat-modal-header">
+          <h3 id="chatModalTitle">Chat History</h3>
+          <button class="chat-modal-close" onclick="closeChatModal()">×</button>
+        </div>
+        <div class="chat-modal-body" id="chatModalBody">
+          <!-- Chat messages will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Bubble (rendered inside app after login) -->
+
+<script>
+let currentUser = null;
+let isAdmin = false;
+let sessionId = null;
+let questionsRemaining = 3;
+const apiBase = '/api';
+const ADMIN_CODE = 'admin-mkane-2024';
+
+// Build app UI only after login to avoid exposing structure to unauthenticated users
+function buildAppHTML() {
+  return `
     <!-- Navbar -->
     <nav class="navbar">
-      <div class="welcome">Welcome, <span id="userName"></span>! I am happy to connect with your team, thank you for stopping by.</div>
+      <div class="welcome">Welcome, <span id="userName"></span>!</div>
       <div class="nav-links">
         <a onclick="showPortfolio()" id="navPortfolio" class="active">Portfolio</a>
         <a onclick="showAdmin()" id="navAdmin" style="display: none;">Admin</a>
@@ -761,36 +737,43 @@
           <h3 id="chatModalTitle">Chat History</h3>
           <button class="chat-modal-close" onclick="closeChatModal()">×</button>
         </div>
-        <div class="chat-modal-body" id="chatModalBody">
-          <!-- Chat messages will be loaded here -->
+        <div class="chat-modal-body" id="chatModalBody"></div>
+      </div>
+    </div>
+
+    <!-- Chat Bubble -->
+    <div class="chat-bubble-container">
+      <button class="chat-bubble-btn" onclick="toggleChat()">💬</button>
+      <div id="chatWindow" class="chat-window">
+        <div class="chat-header">
+          <span>Ask About Matthew</span>
+          <button class="chat-close" onclick="toggleChat()">×</button>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-area">
+          <textarea id="chatInputBubble" placeholder="Ask about experience, skills, background..."></textarea>
+          <button onclick="sendChatBubble()">Send</button>
         </div>
       </div>
     </div>
-  </div>
+  `;
+}
 
-  <!-- Chat Bubble -->
-  <div class="chat-bubble-container">
-    <button class="chat-bubble-btn" onclick="toggleChat()">💬</button>
-    <div id="chatWindow" class="chat-window">
-      <div class="chat-header">
-        <span>Ask About Matthew</span>
-        <button class="chat-close" onclick="toggleChat()">×</button>
-      </div>
-      <div id="chatMessages" class="chat-messages"></div>
-      <div class="chat-input-area">
-        <textarea id="chatInputBubble" placeholder="Ask about experience, skills, background..."></textarea>
-        <button onclick="sendChatBubble()">Send</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-let currentUser = null;
-let isAdmin = false;
-let sessionId = null;
-let questionsRemaining = 3;
-const apiBase = '/api';
-const ADMIN_CODE = 'admin-mkane-2024';
+function renderApp() {
+  const root = document.getElementById('mainApp');
+  root.innerHTML = buildAppHTML();
+  root.style.display = 'block';
+  // Post-render event wiring (Enter-to-send in chat)
+  const chatInput = document.getElementById('chatInputBubble');
+  if (chatInput) {
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatBubble();
+      }
+    });
+  }
+}
 
 // Login gate functions
 async function attemptLogin() {
@@ -816,20 +799,18 @@ async function attemptLogin() {
       isAdmin = (code === ADMIN_CODE);
       questionsRemaining = 3 - (data.company.chat_questions_used || 0);
       
-      // Show main app
+      // Hide login, render app skeleton securely post-auth
       document.getElementById('loginGate').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      
-      // Update navbar
+      renderApp();
+
+      // Update navbar and admin visibility
       document.getElementById('userName').textContent = currentUser.name;
       if (isAdmin) {
         document.getElementById('navAdmin').style.display = 'block';
       }
-      
-      // Load portfolio
+
+      // Load portfolio and chat history
       fetchProfile();
-      
-      // Load chat history
       loadChatHistory();
     } else {
       errorDiv.textContent = data.message || 'Invalid or inactive login code. Please contact Matthew for access.';
