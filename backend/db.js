@@ -59,6 +59,7 @@ export async function initDb() {
         name NVARCHAR(255) NOT NULL,
         login_code NVARCHAR(100) NOT NULL UNIQUE,
         is_active BIT DEFAULT 1,
+        chat_questions_used INT DEFAULT 0,
         created_at DATETIME2 DEFAULT GETDATE()
       );
     `);

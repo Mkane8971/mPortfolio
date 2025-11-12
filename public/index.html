@@ -464,6 +464,7 @@
               <th>Company/Employer</th>
               <th>Login Code</th>
               <th>Status</th>
+              <th>Chat Questions</th>
               <th>Created</th>
               <th>Actions</th>
             </tr>
@@ -494,6 +495,7 @@
 let currentUser = null;
 let isAdmin = false;
 let sessionId = null;
+let questionsRemaining = 3;
 const apiBase = '/api';
 const ADMIN_CODE = 'admin-mkane-2024';
 
@@ -519,6 +521,7 @@ async function attemptLogin() {
     if (data.valid) {
       currentUser = data.company;
       isAdmin = (code === ADMIN_CODE);
+      questionsRemaining = 3 - (data.company.chat_questions_used || 0);
       
       // Show main app
       document.getElementById('loginGate').style.display = 'none';
@@ -532,6 +535,9 @@ async function attemptLogin() {
       
       // Load portfolio
       fetchProfile();
+      
+      // Show welcome message in chat
+      showChatWelcome();
     } else {
       errorDiv.textContent = data.message || 'Invalid or inactive login code. Please contact Matthew for access.';
       errorDiv.style.display = 'block';
@@ -581,13 +587,33 @@ document.addEventListener('DOMContentLoaded', () => {
 // Chat bubble functions
 function toggleChat() {
   const chatWindow = document.getElementById('chatWindow');
+  const isOpening = !chatWindow.classList.contains('open');
   chatWindow.classList.toggle('open');
+  
+  // Show welcome message when opening for the first time
+  if (isOpening && document.getElementById('chatMessages').children.length === 0) {
+    showChatWelcome();
+  }
+}
+
+function showChatWelcome() {
+  const welcomeMsg = `👋 Hi! I'm here to answer questions about Matthew's background. You have ${questionsRemaining} question${questionsRemaining !== 1 ? 's' : ''} remaining.
+
+Try asking:
+• "What's his experience in healthcare IT?"
+• "Tell me about his technical skills"
+• "What projects has he worked on?"`;
+  
+  appendChatBubble('assistant', welcomeMsg);
 }
 
 function appendChatBubble(role, content) {
   const div = document.createElement('div');
-  div.className = role === 'assistant' ? 'msg-assistant' : 'msg-user';
+  div.className = role === 'assistant' ? 'msg-assistant' : (role === 'loading' ? 'msg-assistant' : 'msg-user');
   div.textContent = content;
+  if (role === 'loading') {
+    div.id = 'loadingMessage';
+  }
   document.getElementById('chatMessages').appendChild(div);
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 }
@@ -596,19 +622,49 @@ async function sendChatBubble() {
   const input = document.getElementById('chatInputBubble');
   const text = input.value.trim();
   if (!text) return;
+  
+  if (questionsRemaining <= 0) {
+    appendChatBubble('assistant', "You've used all 3 questions. Please contact Matthew at Mkane8971@gmail.com for more information.");
+    return;
+  }
+  
   appendChatBubble('user', text);
   input.value = '';
+  
+  // Show loading message
+  appendChatBubble('loading', 'Loading...');
   
   try {
     const res = await fetch(`${apiBase}/chat`, { 
       method: 'POST', 
       headers: {'Content-Type': 'application/json'}, 
-      body: JSON.stringify({ messages: [{ role: 'user', content: text }], session_id: sessionId }) 
+      body: JSON.stringify({ 
+        messages: [{ role: 'user', content: text }], 
+        session_id: sessionId,
+        login_code: currentUser.login_code
+      }) 
     });
     const data = await res.json();
+    
+    // Remove loading message
+    const loadingMsg = document.getElementById('loadingMessage');
+    if (loadingMsg) loadingMsg.remove();
+    
     sessionId = data.session_id;
     appendChatBubble('assistant', data.reply);
+    
+    // Update questions remaining
+    if (data.questions_remaining !== undefined) {
+      questionsRemaining = data.questions_remaining;
+      if (questionsRemaining === 0) {
+        appendChatBubble('assistant', `That was your last question! For more info, email Matthew at Mkane8971@gmail.com`);
+      }
+    }
   } catch (err) {
+    // Remove loading message
+    const loadingMsg = document.getElementById('loadingMessage');
+    if (loadingMsg) loadingMsg.remove();
+    
     appendChatBubble('assistant', 'Sorry, there was an error. Please try again.');
   }
 }
@@ -700,14 +756,17 @@ async function loadCompanies() {
     const tr = document.createElement('tr');
     const isActive = c.is_active === undefined || c.is_active === 1 || c.is_active === true;
     const createdDate = new Date(c.created_at).toLocaleDateString();
+    const questionsUsed = c.chat_questions_used || 0;
     
     tr.innerHTML = `
       <td>${c.name}</td>
       <td><code>${c.login_code}</code></td>
       <td><span class="status-badge ${isActive ? 'active' : 'inactive'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+      <td>${questionsUsed} / 3</td>
       <td>${createdDate}</td>
       <td>
         <button class="action-btn toggle" onclick="toggleCompanyStatus(${c.id}, ${isActive})">${isActive ? 'Deactivate' : 'Activate'}</button>
+        <button class="action-btn" onclick="resetChatQuestions(${c.id})" style="background:#17a2b8;color:white;">Reset Chat</button>
         <button class="action-btn delete" onclick="deleteCompany(${c.id})">Delete</button>
       </td>
     `;
@@ -780,6 +839,25 @@ async function deleteCompany(id) {
     }
   } catch (err) {
     alert('Error deleting login code');
+  }
+}
+
+async function resetChatQuestions(id) {
+  if (!confirm('Reset chat questions for this employer? This will give them 3 new questions.')) return;
+  
+  try {
+    const res = await fetch(`${apiBase}/companies/${id}/reset-chat`, { 
+      method: 'POST'
+    });
+    
+    if (res.ok) {
+      loadCompanies();
+      alert('Chat questions reset successfully! User now has 3 questions available.');
+    } else {
+      alert('Failed to reset chat questions');
+    }
+  } catch (err) {
+    alert('Error resetting chat questions');
   }
 }
 

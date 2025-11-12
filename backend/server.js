@@ -123,6 +123,21 @@ app.delete('/api/companies/:id', async (req, res) => {
   }
 });
 
+// Reset chat questions for a company
+app.post('/api/companies/:id/reset-chat', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query('UPDATE companies SET chat_questions_used = 0 WHERE id = @id');
+    res.json({ reset: result.rowsAffected[0] > 0 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
 // Validate login code
 app.post('/api/login-code', async (req, res) => {
   const { code } = req.body;
@@ -149,7 +164,8 @@ app.post('/api/login-code', async (req, res) => {
         company: {
           id: company.id,
           name: company.name,
-          login_code: company.login_code
+          login_code: company.login_code,
+          chat_questions_used: company.chat_questions_used || 0
         }
       });
     }
@@ -182,12 +198,34 @@ app.get('/api/profile', async (req, res) => {
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
-  const { messages, session_id } = req.body;
+  const { messages, session_id, login_code } = req.body;
   if (!Array.isArray(messages)) return res.status(400).json({ error: 'messages must be array' });
+  if (!login_code) return res.status(400).json({ error: 'login_code required' });
   const sid = session_id || crypto.randomUUID();
 
   try {
     const pool = await getPool();
+    
+    // Check chat question limit
+    const companyResult = await pool.request()
+      .input('code', sql.NVarChar, login_code)
+      .query('SELECT id, chat_questions_used FROM companies WHERE login_code = @code');
+    
+    if (companyResult.recordset.length === 0) {
+      return res.status(401).json({ error: 'Invalid login code' });
+    }
+    
+    const company = companyResult.recordset[0];
+    const questionsUsed = company.chat_questions_used || 0;
+    
+    if (questionsUsed >= 3) {
+      return res.json({ 
+        reply: "You've reached your limit of 3 questions. Please contact Matthew directly for more information at Mkane8971@gmail.com",
+        session_id: sid,
+        questions_remaining: 0,
+        limit_reached: true
+      });
+    }
     
     // System prompt: positive, reassuring, and comprehensive about Matthew's background
     const profileResult = await pool.request().query('SELECT full_name, title, summary, skills, experience, education, projects FROM portfolio_profile WHERE id = 1');
@@ -200,6 +238,8 @@ Your tone is always:
 - Reassuring and confident
 - Professional yet warm
 - Highlighting strengths and achievements
+
+IMPORTANT: Keep ALL responses under 200 characters. Be concise but enthusiastic.
 
 Background Information:
 Name: ${profile.full_name}
@@ -218,12 +258,10 @@ When answering questions:
 1. Always emphasize Matthew's unique combination of federal leadership experience and technical expertise
 2. Highlight his proven track record in revenue cycle management and healthcare IT
 3. Showcase his ability to bridge technical and business domains
-4. Mention his commitment to continuous learning (pursuing Master's degree)
-5. Be enthusiastic about his diverse skill set and adaptability
-6. Frame any challenges as opportunities for growth
-7. Reassure that Matthew's background makes him an exceptional candidate for roles in healthcare IT, software engineering, data analytics, or RCM
+4. Be enthusiastic about his diverse skill set and adaptability
+5. Keep responses under 200 characters - be brief but impactful
 
-Remember: You're here to present Matthew in the best possible light while being truthful and accurate.`;
+Remember: You're here to present Matthew in the best possible light while being truthful and accurate. ALWAYS keep responses under 200 characters.`;
 
     // Persist user messages
     for (const m of messages) {
@@ -236,19 +274,31 @@ Remember: You're here to present Matthew in the best possible light while being 
 
     if (!openai) {
       // Return encouraging mock response
-      const mock = `I'd love to tell you about Matthew's impressive background! He's a unique professional who combines deep federal leadership experience with cutting-edge software engineering skills. His work in revenue cycle management and healthcare IT demonstrates his ability to solve complex problems while maintaining a focus on real-world impact. What specific aspect of his background interests you?`;
+      const mock = `Matthew's an impressive pro combining federal leadership with software engineering! Specialized in healthcare IT & RCM. What interests you most?`;
       await pool.request()
         .input('session_id', sql.NVarChar, sid)
         .input('role', sql.NVarChar, 'assistant')
         .input('content', sql.NVarChar, mock)
         .query('INSERT INTO chat_logs (session_id, role, content) VALUES (@session_id, @role, @content)');
-      return res.json({ session_id: sid, reply: mock, mock: true });
+      
+      // Increment question count
+      await pool.request()
+        .input('id', sql.Int, company.id)
+        .query('UPDATE companies SET chat_questions_used = chat_questions_used + 1 WHERE id = @id');
+      
+      return res.json({ 
+        session_id: sid, 
+        reply: mock, 
+        mock: true,
+        questions_remaining: 2 - questionsUsed
+      });
     }
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [ { role: 'system', content: sysContent }, ...messages ],
-      temperature: 0.7
+      temperature: 0.7,
+      max_tokens: 100
     });
     const reply = completion.choices[0].message.content;
     await pool.request()
@@ -256,7 +306,17 @@ Remember: You're here to present Matthew in the best possible light while being 
       .input('role', sql.NVarChar, 'assistant')
       .input('content', sql.NVarChar, reply)
       .query('INSERT INTO chat_logs (session_id, role, content) VALUES (@session_id, @role, @content)');
-    res.json({ session_id: sid, reply });
+    
+    // Increment question count
+    await pool.request()
+      .input('id', sql.Int, company.id)
+      .query('UPDATE companies SET chat_questions_used = chat_questions_used + 1 WHERE id = @id');
+    
+    res.json({ 
+      session_id: sid, 
+      reply,
+      questions_remaining: 2 - questionsUsed
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Chat failed' });
