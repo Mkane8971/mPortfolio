@@ -1016,7 +1016,7 @@ async function fetchProfile() {
       <h3>${job.title}</h3>
       <div class="meta">${job.company} | ${job.period} | ${job.location}</div>
       <ul>
-        ${job.responsibilities.map(r => `<li>${r}</li>`).join('')}
+        ${(Array.isArray(job.responsibilities) ? job.responsibilities : []).map(r => `<li>${r}</li>`).join('')}
       </ul>
     `;
     expDiv.appendChild(jobDiv);
