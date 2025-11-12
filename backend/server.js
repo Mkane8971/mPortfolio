@@ -283,8 +283,8 @@ Answering guidelines:
     }
 
     if (!openai) {
-      // Return encouraging mock response
-  let mock = `I blend federal leadership with software engineering, specializing in healthcare IT and RCM. What would you like to know?`;
+      // Return concise first‑person welcome when OpenAI is not configured
+  let mock = `I’m Matthew Kane (RHIA)—HIM/RCM specialist and software engineer. I improve claims, data quality, and workflows using SQL/SSRS and automation. What would you like to know?`;
       
       // Add email offer after third question
       if (questionsUsed === 2) {
