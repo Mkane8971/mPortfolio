@@ -675,7 +675,7 @@
   <div id="mainApp" style="display: none;">
     <!-- Navbar -->
     <nav class="navbar">
-      <div class="welcome">Welcome, <span id="userName"></span>! Welcome to my AI powered resume application. I am happy to connect with your team, thank you for stopping by.</div>
+      <div class="welcome">Welcome, <span id="userName"></span>! I am happy to connect with your team, thank you for stopping by.</div>
       <div class="nav-links">
         <a onclick="showPortfolio()" id="navPortfolio" class="active">Portfolio</a>
         <a onclick="showAdmin()" id="navAdmin" style="display: none;">Admin</a>
@@ -904,7 +904,7 @@ function toggleChat() {
 }
 
 function showChatWelcome() {
-  const welcomeMsg = `👋 Hi! I'm here to answer questions about Matthew's background. You have ${questionsRemaining} question${questionsRemaining !== 1 ? 's' : ''} remaining.
+  const welcomeMsg = `👋 Hi! I'm here to answer questions about my background. You can ask me questions here just like in person. You have ${questionsRemaining} question${questionsRemaining !== 1 ? 's' : ''} remaining.
 
 Try asking:
 • "What's his experience in healthcare IT?"
