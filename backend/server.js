@@ -194,8 +194,28 @@ app.get('/api/profile', async (req, res) => {
     // Normalize shapes so the frontend rendering always works
     const normalized = { ...row };
 
-    // Skills already an array; if string, coerce into single-item array
-    if (typeof normalized.skills === 'string') normalized.skills = [normalized.skills];
+    // Skills: attempt to load rich metadata from profile_skills table; fall back to raw array
+    let richSkills = [];
+    try {
+      const skillRows = await pool.request().query('SELECT name, origin, started_year, category, notes FROM profile_skills WHERE profile_id = 1 ORDER BY name ASC');
+      richSkills = skillRows.recordset.map(r => ({
+        name: r.name,
+        origin: r.origin,
+        started_year: r.started_year,
+        category: r.category,
+        notes: r.notes,
+        years_experience: r.started_year ? (new Date().getFullYear() - r.started_year) : null
+      }));
+    } catch (e) {
+      console.warn('Skill metadata query failed, falling back to legacy skills array:', e.message);
+    }
+    if (richSkills.length > 0) {
+      normalized.skills = richSkills;
+    } else if (Array.isArray(normalized.skills)) {
+      normalized.skills = normalized.skills.map(s => ({ name: s }));
+    } else if (typeof normalized.skills === 'string') {
+      normalized.skills = [{ name: normalized.skills }];
+    }
 
     // Experience: map role/title and highlights/achievements to responsibilities
     if (Array.isArray(normalized.experience)) {

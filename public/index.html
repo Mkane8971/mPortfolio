@@ -61,6 +61,12 @@
       font-size: 1.1rem;
       font-weight: 600;
     }
+    .navbar .welcome .tagline {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-left: 8px;
+      opacity: 0.9;
+    }
     .navbar .nav-links {
       display: flex;
       gap: 1.5rem;
@@ -162,6 +168,21 @@
     #skills li:hover {
       transform: translateY(-3px);
       box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    /* Skill tooltip */
+    .skill-tooltip {
+      position: fixed;
+      z-index: 10001;
+      max-width: 320px;
+      background: #111827;
+      color: #f9fafb;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      font-size: 0.92rem;
+      line-height: 1.4;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.08);
     }
     
     /* Experience Cards */
@@ -675,7 +696,7 @@
   <div id="mainApp" style="display: none;">
     <!-- Navbar -->
     <nav class="navbar">
-      <div class="welcome">Welcome, <span id="userName"></span>!</div>
+      <div class="welcome">Welcome, <span id="userName"></span>! <span id="welcomeTagline" class="tagline"></span></div>
       <div class="nav-links">
         <a onclick="showPortfolio()" id="navPortfolio" class="active">Portfolio</a>
         <a onclick="showAdmin()" id="navAdmin" style="display: none;">Admin</a>
@@ -821,7 +842,9 @@ async function attemptLogin() {
       document.getElementById('mainApp').style.display = 'block';
       
       // Update navbar
-      document.getElementById('userName').textContent = currentUser.name;
+  document.getElementById('userName').textContent = currentUser.name;
+  const taglineEl = document.getElementById('welcomeTagline');
+  if (taglineEl) taglineEl.textContent = 'Welcome to my full‑stack resume page, I’m excited to connect!';
       if (isAdmin) {
         document.getElementById('navAdmin').style.display = 'block';
       }
@@ -904,13 +927,13 @@ function toggleChat() {
 }
 
 function showChatWelcome() {
-  const welcomeMsg = `👋 Hi! I'm here to answer questions about Matthew's background. You have ${questionsRemaining} question${questionsRemaining !== 1 ? 's' : ''} remaining.
+  const welcomeMsg = `👋 Hi, I’m Matthew Kane (RHIA). Welcome to my full‑stack resume page—ask me anything about my background. You have ${questionsRemaining} question${questionsRemaining !== 1 ? 's' : ''} remaining.
 
 Try asking:
-• "What's his experience in healthcare IT?"
-• "Tell me about his technical skills"
-• "What projects has he worked on?"`;
-  
+• "What’s your experience in healthcare IT/RCM?"
+• "Tell me about your technical skills"
+• "What projects have you worked on?"`;
+
   appendChatBubble('assistant', welcomeMsg);
 }
 
@@ -997,12 +1020,49 @@ async function fetchProfile() {
   document.getElementById('title').textContent = data.title;
   document.getElementById('summary').textContent = data.summary;
   
+  // Legacy skill details removed: now using rich metadata from API (data.skills objects)
+  let tooltipEl = document.getElementById('skillTooltip');
+  if (!tooltipEl) {
+    tooltipEl = document.createElement('div');
+    tooltipEl.id = 'skillTooltip';
+    tooltipEl.className = 'skill-tooltip';
+    tooltipEl.style.display = 'none';
+    document.body.appendChild(tooltipEl);
+  }
+  
   // Skills
   const skillsUl = document.getElementById('skills');
   skillsUl.innerHTML = '';
-  (data.skills || []).forEach(s => {
+  (data.skills || []).forEach(skill => {
     const li = document.createElement('li');
-    li.textContent = s; 
+    const isObj = typeof skill === 'object' && skill !== null;
+    const name = isObj ? (skill.name || '') : skill;
+    li.textContent = name;
+    li.className = 'skill-item';
+    if (isObj) {
+      const years = skill.years_experience != null ? `${skill.years_experience} year${skill.years_experience === 1 ? '' : 's'}` : '';
+      const parts = [];
+      if (skill.origin) parts.push(`<strong>Origin:</strong> ${skill.origin}`);
+      if (years) parts.push(`<strong>Experience:</strong> ${years}`);
+      if (skill.category) parts.push(`<strong>Category:</strong> ${skill.category}`);
+      if (skill.notes) parts.push(`<em>${skill.notes}</em>`);
+      const html = `<strong>${name}</strong><br>${parts.join('<br>')}`;
+      li.addEventListener('mouseenter', (e) => {
+        tooltipEl.innerHTML = html;
+        tooltipEl.style.display = 'block';
+        const rect = e.target.getBoundingClientRect();
+        const top = rect.top + window.scrollY - tooltipEl.offsetHeight - 8;
+        const left = rect.left + window.scrollX + (rect.width/2) - (tooltipEl.offsetWidth/2);
+        tooltipEl.style.top = `${Math.max(8, top)}px`;
+        tooltipEl.style.left = `${Math.max(8, left)}px`;
+      });
+      li.addEventListener('mousemove', (e) => {
+        if (tooltipEl.style.display !== 'block') return;
+        tooltipEl.style.top = `${e.clientY + window.scrollY - tooltipEl.offsetHeight - 12}px`;
+        tooltipEl.style.left = `${e.clientX + window.scrollX + 12}px`;
+      });
+      li.addEventListener('mouseleave', () => { tooltipEl.style.display = 'none'; });
+    }
     skillsUl.appendChild(li);
   });
 

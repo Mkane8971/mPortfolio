@@ -108,6 +108,27 @@ export async function initDb() {
       );
     `);
 
+    // Create profile_skills table for rich skill metadata
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='profile_skills' AND xtype='U')
+      BEGIN
+        CREATE TABLE profile_skills (
+          id INT IDENTITY(1,1) PRIMARY KEY,
+          profile_id INT NOT NULL,
+          name NVARCHAR(200) NOT NULL,
+          origin NVARCHAR(400) NULL, -- How the skill was obtained (e.g., project, program)
+          started_year INT NULL,     -- First year using the skill
+          started_on DATE NULL,      -- Or precise start date
+          category NVARCHAR(100) NULL,
+          proficiency TINYINT NULL,  -- 1-5 scale (optional)
+          notes NVARCHAR(MAX) NULL,
+          created_at DATETIME2 DEFAULT GETDATE(),
+          CONSTRAINT FK_profile_skills_profile FOREIGN KEY (profile_id) REFERENCES portfolio_profile(id)
+        );
+        CREATE UNIQUE INDEX IX_profile_skills_unique ON profile_skills(profile_id, name);
+      END
+    `);
+
     // Seed portfolio profile if not exists
     const checkProfile = await pool.request().query('SELECT COUNT(*) as cnt FROM portfolio_profile WHERE id = 1');
     if (checkProfile.recordset[0].cnt === 0) {
@@ -123,6 +144,33 @@ export async function initDb() {
           INSERT INTO portfolio_profile (id, full_name, title, summary, skills, experience, education, projects)
           VALUES (1, @full_name, @title, @summary, @skills, @experience, @education, @projects)
         `);
+    }
+
+    // Seed profile_skills if table exists and empty (basic starter data based on initial skills array)
+    const hasSkillTable = await pool.request().query("SELECT COUNT(*) AS cnt FROM sysobjects WHERE name='profile_skills' AND xtype='U'");
+    if (hasSkillTable.recordset[0].cnt === 1) {
+      const skillCount = await pool.request().query('SELECT COUNT(*) AS cnt FROM profile_skills WHERE profile_id = 1');
+      if (skillCount.recordset[0].cnt === 0) {
+        const seedSkills = [
+          { name: 'JavaScript', origin: 'Self-directed projects & bootcamp', started_year: 2021, category: 'Programming', notes: 'Used across full-stack apps and automation scripts.' },
+          { name: 'TypeScript', origin: 'Adopted in Node/React refactors', started_year: 2022, category: 'Programming', notes: 'Improved type safety and refactoring speed.' },
+          { name: 'Node', origin: 'Backend APIs & tooling', started_year: 2021, category: 'Backend', notes: 'Express services, CLI scripts, integration tasks.' },
+          { name: 'React', origin: 'Frontend UI builds', started_year: 2022, category: 'Frontend', notes: 'Component-driven dashboards and forms.' },
+          { name: 'Express', origin: 'REST API development', started_year: 2021, category: 'Backend', notes: 'Routing, middleware, chat logging API.' },
+          { name: 'SQL Server', origin: 'Reporting & data modeling', started_year: 2021, category: 'Database', notes: 'Schema design, query tuning, analytics.' }
+        ];
+        for (const s of seedSkills) {
+          await pool.request()
+            .input('profile_id', sql.Int, 1)
+            .input('name', sql.NVarChar, s.name)
+            .input('origin', sql.NVarChar, s.origin)
+            .input('started_year', sql.Int, s.started_year)
+            .input('category', sql.NVarChar, s.category)
+            .input('notes', sql.NVarChar, s.notes)
+            .query(`INSERT INTO profile_skills (profile_id, name, origin, started_year, category, notes) VALUES (@profile_id, @name, @origin, @started_year, @category, @notes)`);
+        }
+        console.log('✓ Seeded profile_skills metadata');
+      }
     }
 
     console.log('Database schema initialized successfully');
