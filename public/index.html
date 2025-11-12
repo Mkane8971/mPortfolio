@@ -82,7 +82,7 @@
     
     /* Portfolio Page */
     .portfolio-page {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 2rem auto;
       padding: 0 2rem;
     }
@@ -101,58 +101,172 @@
       padding: 3rem 2rem;
       text-align: center;
     }
-    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    .header h3 { font-size: 1.3rem; opacity: 0.9; font-weight: 400; }
-    .content { padding: 2rem; }
-    section { margin-bottom: 2rem; }
-    h2 { color: #667eea; margin-bottom: 1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; }
-    p { line-height: 1.6; color: #444; }
-    ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    ul li { 
-      background: #f0f0f0; 
-      padding: 0.5rem 1rem; 
-      border-radius: 20px; 
-      font-size: 0.9rem;
-      color: #555;
+    .header h1 { 
+      font-size: 2.8rem; 
+      margin-bottom: 0.5rem; 
+      font-weight: 700;
     }
+    .header h3 { 
+      font-size: 1.3rem; 
+      opacity: 0.95; 
+      font-weight: 400; 
+      line-height: 1.5;
+    }
+    .content { 
+      padding: 2.5rem; 
+    }
+    section { 
+      margin-bottom: 3rem; 
+    }
+    h2 { 
+      color: #667eea; 
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem; 
+      border-bottom: 3px solid #667eea; 
+      padding-bottom: 0.75rem;
+    }
+    p { 
+      line-height: 1.8; 
+      color: #2c3e50; 
+      font-size: 1.05rem;
+    }
+    
+    /* Summary Box */
+    .summary-box {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+      padding: 2rem;
+      border-radius: 12px;
+      border-left: 5px solid #667eea;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* Skills Grid */
+    #skills {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      list-style: none;
+      padding: 0;
+    }
+    #skills li { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #skills li:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Experience Cards */
     .job { 
       margin-bottom: 2rem; 
-      padding: 1.5rem;
+      padding: 1.75rem;
       background: #f8f9fa;
-      border-radius: 8px;
+      border-radius: 12px;
       border-left: 4px solid #667eea;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .job h3 { color: #333; margin-bottom: 0.5rem; }
-    .job .meta { color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
-    .job ul { list-style: disc; margin-left: 1.5rem; display: block; }
+    .job:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+    }
+    .job h3 { 
+      color: #2c3e50; 
+      margin-bottom: 0.5rem; 
+      font-size: 1.3rem;
+    }
+    .job .meta { 
+      color: #667eea; 
+      font-size: 0.95rem; 
+      margin-bottom: 1rem; 
+      font-weight: 600;
+    }
+    .job ul { 
+      list-style: none; 
+      margin-left: 0; 
+      display: block;
+      padding: 0;
+    }
     .job ul li { 
       background: none; 
-      padding: 0.25rem 0; 
+      padding: 0;
+      padding-left: 1.75rem;
       border-radius: 0;
-      color: #444;
+      color: #34495e;
+      margin-bottom: 0.75rem;
+      position: relative;
+      line-height: 1.6;
+    }
+    .job ul li:before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: #667eea;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    /* Education Cards */
+    .edu-item {
+      margin-bottom: 1.25rem;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #28a745;
+      transition: transform 0.2s;
+    }
+    .edu-item:hover {
+      transform: translateX(5px);
+    }
+    .edu-item h4 { 
+      color: #2c3e50; 
+      margin-bottom: 0.5rem; 
+      font-size: 1.2rem;
+    }
+    .edu-item .institution { 
+      color: #28a745; 
+      font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    .edu-item {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 6px;
+    
+    /* Projects Grid */
+    #projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
     }
-    .edu-item h4 { color: #667eea; margin-bottom: 0.25rem; }
-    .edu-item .institution { color: #666; font-style: italic; }
     .project-card {
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
+      padding: 1.75rem;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border-radius: 8px;
-      border-left: 4px solid #764ba2;
+      border-radius: 12px;
+      border-top: 4px solid #764ba2;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .project-card h4 { color: #333; margin-bottom: 0.5rem; }
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .project-card h4 { 
+      color: #2c3e50; 
+      margin-bottom: 0.75rem; 
+      font-size: 1.2rem;
+    }
     .project-card .tech { 
       color: #667eea; 
       font-size: 0.9rem; 
       margin-bottom: 0.75rem;
       font-weight: 600;
+    }
+    .project-card p {
+      color: #34495e;
+      line-height: 1.6;
     }
     
     /* Admin Page */
@@ -272,6 +386,100 @@
     .action-btn.delete:hover {
       background: #c82333;
     }
+    .action-btn.view-chat {
+      background: #28a745;
+      color: white;
+    }
+    .action-btn.view-chat:hover {
+      background: #218838;
+    }
+    
+    /* Chat Modal */
+    .chat-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .chat-modal.open {
+      display: flex;
+    }
+    .chat-modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .chat-modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-modal-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    .chat-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0;
+      width: 35px;
+      height: 35px;
+      line-height: 1;
+    }
+    .chat-modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .chat-log-message {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .chat-log-message.user-message {
+      background: #e3f2fd;
+      border-left-color: #2196f3;
+    }
+    .chat-log-message.assistant-message {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .chat-log-message .message-meta {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .chat-log-message .message-content {
+      color: #333;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .no-chat-messages {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+      font-size: 1.1rem;
+    }
     
     /* Chat Bubble */
     .chat-bubble-container {
@@ -372,6 +580,75 @@
       border-left: 3px solid #4caf50;
       word-wrap: break-word;
     }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .navbar .nav-links {
+        width: 100%;
+        justify-content: center;
+      }
+      .portfolio-page {
+        padding: 0 1rem;
+        margin: 1rem auto;
+      }
+      .content {
+        padding: 1.5rem;
+      }
+      .header {
+        padding: 2rem 1.5rem;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .header h3 {
+        font-size: 1.1rem;
+      }
+      #skills {
+        grid-template-columns: 1fr;
+      }
+      #projects {
+        grid-template-columns: 1fr;
+      }
+      .chat-window {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+      }
+      .admin-page {
+        padding: 0 1rem;
+      }
+      table {
+        font-size: 0.85rem;
+      }
+      td, th {
+        padding: 0.75rem 0.5rem;
+      }
+      .action-btn {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+        margin: 0.1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      .header h3 {
+        font-size: 1rem;
+      }
+      section h2 {
+        font-size: 1.4rem;
+      }
+      .job h3 {
+        font-size: 1.1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -415,7 +692,10 @@
         </div>
         <div class="content">
           <section>
-            <p id="summary" style="font-size: 1.1rem; line-height: 1.8;"></p>
+            <h2>👋 About Me</h2>
+            <div class="summary-box">
+              <p id="summary"></p>
+            </div>
           </section>
           
           <section>
@@ -424,7 +704,7 @@
           </section>
 
           <section>
-            <h2>🛠️ Technical Skills</h2>
+            <h2>🛠️ Technical Skills & Expertise</h2>
             <ul id="skills"></ul>
           </section>
 
@@ -434,7 +714,7 @@
           </section>
 
           <section>
-            <h2>🚀 Recent Projects</h2>
+            <h2>🚀 Featured Projects & Leadership</h2>
             <div id="projects"></div>
           </section>
         </div>
@@ -471,6 +751,19 @@
           </thead>
           <tbody id="companiesTable"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Chat Log Modal -->
+    <div id="chatModal" class="chat-modal">
+      <div class="chat-modal-content">
+        <div class="chat-modal-header">
+          <h3 id="chatModalTitle">Chat History</h3>
+          <button class="chat-modal-close" onclick="closeChatModal()">×</button>
+        </div>
+        <div class="chat-modal-body" id="chatModalBody">
+          <!-- Chat messages will be loaded here -->
+        </div>
       </div>
     </div>
   </div>
@@ -536,8 +829,8 @@ async function attemptLogin() {
       // Load portfolio
       fetchProfile();
       
-      // Show welcome message in chat
-      showChatWelcome();
+      // Load chat history
+      loadChatHistory();
     } else {
       errorDiv.textContent = data.message || 'Invalid or inactive login code. Please contact Matthew for access.';
       errorDiv.style.display = 'block';
@@ -585,15 +878,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Chat bubble functions
-function toggleChat() {
-  const chatWindow = document.getElementById('chatWindow');
-  const isOpening = !chatWindow.classList.contains('open');
-  chatWindow.classList.toggle('open');
-  
-  // Show welcome message when opening for the first time
-  if (isOpening && document.getElementById('chatMessages').children.length === 0) {
+async function loadChatHistory() {
+  try {
+    const res = await fetch(`${apiBase}/chat-history/${currentUser.login_code}`);
+    const data = await res.json();
+    
+    if (data.messages && data.messages.length > 0) {
+      // Load existing messages
+      data.messages.forEach(msg => {
+        appendChatBubble(msg.role, msg.content);
+      });
+    } else {
+      // Show welcome message if no history
+      showChatWelcome();
+    }
+  } catch (err) {
+    console.error('Error loading chat history:', err);
     showChatWelcome();
   }
+}
+
+function toggleChat() {
+  const chatWindow = document.getElementById('chatWindow');
+  chatWindow.classList.toggle('open');
 }
 
 function showChatWelcome() {
@@ -765,6 +1072,7 @@ async function loadCompanies() {
       <td>${questionsUsed} / 3</td>
       <td>${createdDate}</td>
       <td>
+        <button class="action-btn view-chat" onclick="viewChatLogs('${c.login_code}', '${c.name}')">View Chats</button>
         <button class="action-btn toggle" onclick="toggleCompanyStatus(${c.id}, ${isActive})">${isActive ? 'Deactivate' : 'Activate'}</button>
         <button class="action-btn" onclick="resetChatQuestions(${c.id})" style="background:#17a2b8;color:white;">Reset Chat</button>
         <button class="action-btn delete" onclick="deleteCompany(${c.id})">Delete</button>
@@ -860,6 +1168,64 @@ async function resetChatQuestions(id) {
     alert('Error resetting chat questions');
   }
 }
+
+// Chat viewing functions
+async function viewChatLogs(loginCode, companyName) {
+  try {
+    const res = await fetch(`${apiBase}/chat-history/${loginCode}`);
+    const data = await res.json();
+    
+    // Update modal title
+    document.getElementById('chatModalTitle').textContent = `Chat History - ${companyName}`;
+    
+    // Populate modal body
+    const modalBody = document.getElementById('chatModalBody');
+    modalBody.innerHTML = '';
+    
+    if (data.messages && data.messages.length > 0) {
+      data.messages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-log-message ${msg.role === 'user' ? 'user-message' : 'assistant-message'}`;
+        
+        const timestamp = new Date(msg.created_at).toLocaleString();
+        const roleLabel = msg.role === 'user' ? '👤 User' : '🤖 Assistant';
+        
+        messageDiv.innerHTML = `
+          <div class="message-meta">${roleLabel} - ${timestamp}</div>
+          <div class="message-content">${escapeHtml(msg.content)}</div>
+        `;
+        
+        modalBody.appendChild(messageDiv);
+      });
+    } else {
+      modalBody.innerHTML = '<div class="no-chat-messages">📭 No chat messages yet</div>';
+    }
+    
+    // Show modal
+    document.getElementById('chatModal').classList.add('open');
+  } catch (err) {
+    console.error('Error loading chat logs:', err);
+    alert('Failed to load chat history');
+  }
+}
+
+function closeChatModal() {
+  document.getElementById('chatModal').classList.remove('open');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('chatModal');
+  if (e.target === modal) {
+    closeChatModal();
+  }
+});
 
 </script>
 </body>

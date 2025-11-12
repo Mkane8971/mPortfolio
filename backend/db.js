@@ -86,6 +86,7 @@ export async function initDb() {
       CREATE TABLE chat_logs (
         id INT IDENTITY(1,1) PRIMARY KEY,
         session_id NVARCHAR(100) NOT NULL,
+        login_code NVARCHAR(100) NOT NULL,
         role NVARCHAR(50) NOT NULL,
         content NVARCHAR(MAX) NOT NULL,
         created_at DATETIME2 DEFAULT GETDATE()

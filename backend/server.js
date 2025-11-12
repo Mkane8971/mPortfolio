@@ -45,7 +45,7 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/companies', async (req, res) => {
   try {
     const pool = await getPool();
-    const result = await pool.request().query('SELECT id, name, login_code, created_at FROM companies ORDER BY created_at DESC');
+    const result = await pool.request().query('SELECT id, name, login_code, is_active, chat_questions_used, created_at FROM companies ORDER BY created_at DESC');
     res.json(result.recordset);
   } catch (err) {
     console.error(err);
@@ -196,6 +196,22 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
+// Get chat history for a login code
+app.get('/api/chat-history/:loginCode', async (req, res) => {
+  const { loginCode } = req.params;
+  try {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('login_code', sql.NVarChar, loginCode)
+      .query('SELECT role, content, created_at FROM chat_logs WHERE login_code = @login_code ORDER BY created_at ASC');
+    
+    res.json({ messages: result.recordset });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   const { messages, session_id, login_code } = req.body;
@@ -267,19 +283,27 @@ Remember: You're here to present Matthew in the best possible light while being 
     for (const m of messages) {
       await pool.request()
         .input('session_id', sql.NVarChar, sid)
+        .input('login_code', sql.NVarChar, login_code)
         .input('role', sql.NVarChar, m.role)
         .input('content', sql.NVarChar, m.content)
-        .query('INSERT INTO chat_logs (session_id, role, content) VALUES (@session_id, @role, @content)');
+        .query('INSERT INTO chat_logs (session_id, login_code, role, content) VALUES (@session_id, @login_code, @role, @content)');
     }
 
     if (!openai) {
       // Return encouraging mock response
-      const mock = `Matthew's an impressive pro combining federal leadership with software engineering! Specialized in healthcare IT & RCM. What interests you most?`;
+      let mock = `Matthew's an impressive pro combining federal leadership with software engineering! Specialized in healthcare IT & RCM. What interests you most?`;
+      
+      // Add email offer after third question
+      if (questionsUsed === 2) {
+        mock = "You've reached your limit of 3 questions. For more information, please contact Matthew at Mkane8971@gmail.com";
+      }
+      
       await pool.request()
         .input('session_id', sql.NVarChar, sid)
+        .input('login_code', sql.NVarChar, login_code)
         .input('role', sql.NVarChar, 'assistant')
         .input('content', sql.NVarChar, mock)
-        .query('INSERT INTO chat_logs (session_id, role, content) VALUES (@session_id, @role, @content)');
+        .query('INSERT INTO chat_logs (session_id, login_code, role, content) VALUES (@session_id, @login_code, @role, @content)');
       
       // Increment question count
       await pool.request()
@@ -300,12 +324,19 @@ Remember: You're here to present Matthew in the best possible light while being 
       temperature: 0.7,
       max_tokens: 100
     });
-    const reply = completion.choices[0].message.content;
+    let reply = completion.choices[0].message.content;
+    
+    // Add email offer after third question (when questionsUsed will be 2 after increment)
+    if (questionsUsed === 2) {
+      reply += "\n\nYou've used all your questions! For more details, contact Matthew at Mkane8971@gmail.com";
+    }
+    
     await pool.request()
       .input('session_id', sql.NVarChar, sid)
+      .input('login_code', sql.NVarChar, login_code)
       .input('role', sql.NVarChar, 'assistant')
       .input('content', sql.NVarChar, reply)
-      .query('INSERT INTO chat_logs (session_id, role, content) VALUES (@session_id, @role, @content)');
+      .query('INSERT INTO chat_logs (session_id, login_code, role, content) VALUES (@session_id, @login_code, @role, @content)');
     
     // Increment question count
     await pool.request()
