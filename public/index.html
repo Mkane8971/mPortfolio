@@ -1029,10 +1029,11 @@ async function fetchProfile() {
   (data.education || []).forEach(edu => {
     const eduItem = document.createElement('div');
     eduItem.className = 'edu-item';
+    const details = edu.details || edu.detail || edu.notes || edu.note || '';
     eduItem.innerHTML = `
       <h4>${edu.degree}</h4>
       <div class="institution">${edu.institution}</div>
-      ${edu.details ? `<div style="color:#666;margin-top:0.5rem;">${edu.details}</div>` : ''}
+      ${details ? `<div style="color:#666;margin-top:0.5rem;">${details}</div>` : ''}
       ${edu.status ? `<div style="color:#667eea;font-weight:600;margin-top:0.25rem;">${edu.status}</div>` : ''}
     `;
     eduDiv.appendChild(eduItem);

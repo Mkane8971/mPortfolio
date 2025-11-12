@@ -201,12 +201,16 @@ app.get('/api/profile', async (req, res) => {
       location: normStr(e?.location),
       responsibilities: toArr(e?.responsibilities).filter(Boolean).map(normStr)
     }));
-    row.education = toArr(row.education).filter(Boolean).map(e => ({
-      degree: normStr(e?.degree),
-      institution: normStr(e?.institution),
-      details: e?.details ? normStr(e.details) : '',
-      status: e?.status ? normStr(e.status) : ''
-    }));
+    // Prefer "details" but tolerate common variants from older data (detail, notes, note)
+    row.education = toArr(row.education).filter(Boolean).map(e => {
+      const detailsVal = e?.details ?? e?.detail ?? e?.notes ?? e?.note ?? '';
+      return {
+        degree: normStr(e?.degree),
+        institution: normStr(e?.institution),
+        details: detailsVal ? normStr(detailsVal) : '',
+        status: e?.status ? normStr(e.status) : ''
+      };
+    });
     row.projects = toArr(row.projects).filter(Boolean).map(p => ({
       name: normStr(p?.name),
       organization: p?.organization ? normStr(p.organization) : '',
