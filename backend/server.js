@@ -247,37 +247,29 @@ app.post('/api/chat', async (req, res) => {
     const profileResult = await pool.request().query('SELECT full_name, title, summary, skills, experience, education, projects FROM portfolio_profile WHERE id = 1');
     const profile = profileResult.recordset[0];
     
-    const sysContent = `You are an enthusiastic and supportive AI assistant representing Matthew Kane, a talented RCM Specialist and Software Engineer. 
+  const sysContent = `You are Matthew Kane speaking in first person (use "I", "my"). Do NOT say you're an AI assistant.
 
-Your tone is always:
-- Positive and encouraging
-- Reassuring and confident
+Tone:
+- Positive, encouraging, confident
 - Professional yet warm
-- Highlighting strengths and achievements
+- Highlight strengths and achievements
 
-IMPORTANT: Keep ALL responses under 200 characters. Be concise but enthusiastic.
+HARD LIMIT: Keep EVERY reply under 200 characters.
 
-Background Information:
+Background:
 Name: ${profile.full_name}
 Title: ${profile.title}
 Summary: ${profile.summary}
-
 Skills: ${profile.skills}
-
-Professional Experience: ${profile.experience}
-
-Education & Certifications: ${profile.education}
-
+Experience: ${profile.experience}
+Education: ${profile.education}
 Projects: ${profile.projects}
 
-When answering questions:
-1. Always emphasize Matthew's unique combination of federal leadership experience and technical expertise
-2. Highlight his proven track record in revenue cycle management and healthcare IT
-3. Showcase his ability to bridge technical and business domains
-4. Be enthusiastic about his diverse skill set and adaptability
-5. Keep responses under 200 characters - be brief but impactful
-
-Remember: You're here to present Matthew in the best possible light while being truthful and accurate. ALWAYS keep responses under 200 characters.`;
+Answering guidelines:
+1) Emphasize the synergy between my federal leadership experience and technical engineering expertise, showing strategic vision and execution strength.
+2) Highlight measurable impact in Revenue Cycle Management (RCM) and healthcare IT modernization, focusing on efficiency, compliance, and innovation.
+3) Clearly bridge business and technical domains, translating complex systems into operational value and aligning technology with organizational goals.
+4) Be concise, confident and enthusiastic (<200 chars)`;
 
     // Persist user messages
     for (const m of messages) {
@@ -291,11 +283,11 @@ Remember: You're here to present Matthew in the best possible light while being 
 
     if (!openai) {
       // Return encouraging mock response
-      let mock = `Matthew's an impressive pro combining federal leadership with software engineering! Specialized in healthcare IT & RCM. What interests you most?`;
+  let mock = `I blend federal leadership with software engineering, specializing in healthcare IT and RCM. What would you like to know?`;
       
       // Add email offer after third question
       if (questionsUsed === 2) {
-        mock = "You've reached your limit of 3 questions. For more information, please contact Matthew at Mkane8971@gmail.com";
+        mock = "You’ve reached your 3-question limit. Email me at Mkane8971@gmail.com";
       }
       
       await pool.request()
@@ -324,11 +316,13 @@ Remember: You're here to present Matthew in the best possible light while being 
       temperature: 0.7,
       max_tokens: 100
     });
-    let reply = completion.choices[0].message.content;
+  let reply = completion.choices[0].message.content || '';
     
     // Add email offer after third question (when questionsUsed will be 2 after increment)
     if (questionsUsed === 2) {
-      reply += "\n\nYou've used all your questions! For more details, contact Matthew at Mkane8971@gmail.com";
+      // Keep under 200 chars overall; trim if needed, then add short contact
+      if (reply.length > 150) reply = reply.slice(0, 150).trim();
+      reply = `${reply} Email me: Mkane8971@gmail.com`;
     }
     
     await pool.request()

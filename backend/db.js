@@ -6,9 +6,11 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
+// For Azure SQL, set DB_SERVER to: <yourserver>.database.windows.net
+// For local SQL Server, use: localhost or 127.0.0.1
 const config = {
-  server: 'localhost',
-  port: 1434,
+  server: process.env.DB_SERVER || 'localhost',
+  port: parseInt(process.env.DB_PORT || '1434'),
   user: process.env.DB_USER || 'sa',
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'portfolio',
@@ -23,6 +25,12 @@ const config = {
     idleTimeoutMillis: 30000
   }
 };
+
+// Validate critical DB config on startup
+if (!config.password) {
+  console.error('⚠️  DB_PASSWORD environment variable is required but not set!');
+  console.error('Set DB_PASSWORD in your environment or .env file.');
+}
 
 let pool = null;
 
@@ -49,7 +57,14 @@ export async function getPool() {
 
 export async function initDb() {
   try {
+    console.log('🔌 Connecting to SQL Server...');
+    console.log(`   Server: ${config.server}:${config.port}`);
+    console.log(`   Database: ${config.database}`);
+    console.log(`   Encrypt: ${config.options.encrypt}`);
+    
     const pool = await getPool();
+    
+    console.log('✅ Database connection established');
     
     // Create companies table
     await pool.request().query(`
@@ -112,7 +127,15 @@ export async function initDb() {
 
     console.log('Database schema initialized successfully');
   } catch (err) {
-    console.error('Database initialization error:', err);
+    console.error('❌ Database initialization error:', err.message);
+    if (err.code === 'ELOGIN') {
+      console.error('   → Check DB_USER and DB_PASSWORD are correct');
+    } else if (err.code === 'ETIMEOUT' || err.code === 'ESOCKET') {
+      console.error('   → Check DB_SERVER is reachable and firewall allows connection');
+      console.error('   → For Azure SQL, ensure your IP is whitelisted in firewall rules');
+    } else if (err.code === 'ENOTFOUND') {
+      console.error('   → DB_SERVER hostname could not be resolved');
+    }
     throw err;
   }
 }

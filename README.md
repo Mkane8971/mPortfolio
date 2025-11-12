@@ -24,6 +24,8 @@ ADMIN_PASSWORD=supersecret
 OPENAI_API_KEY=
 
 # SQL Server (local dev defaults shown)
+DB_SERVER=localhost
+DB_PORT=1434
 DB_USER=sa
 DB_PASSWORD=YourStrong(!)Password
 DB_NAME=portfolio
@@ -71,31 +73,15 @@ Because this app uses SQL Server, the simplest fully online setup is:
 - Azure App Service for the Node backend (serves the `public/` frontend)
 - GitHub Actions for CI/CD
 
-This repo already includes a workflow at `.github/workflows/deploy-azure.yml`. To use it:
+This repo already includes a workflow at `.github/workflows/deploy-azure.yml`.
 
-1) Create Azure resources (one-time):
-- Azure SQL Database (any small tier is fine to start)
-- Azure App Service (Runtime stack: Node 20 LTS)
+**📖 For complete step-by-step deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
 
-2) In your GitHub repo settings -> Secrets and variables -> Actions, add:
-- `AZURE_WEBAPP_NAME` = your App Service name
-- `AZURE_WEBAPP_PUBLISH_PROFILE` = publish profile XML for your App Service (download from Azure Portal)
-
-3) In the App Service Configuration (Application settings), add environment variables:
-- `PORT` = 8080 (or leave unset; App Service sets `PORT` automatically)
-- `ADMIN_PASSWORD` = your admin password
-- `JWT_SECRET` = a strong secret
-- `OPENAI_API_KEY` = optional
-- `DB_USER` = your Azure SQL login
-- `DB_PASSWORD` = your Azure SQL password
-- `DB_NAME` = your database name
-- `DB_ENCRYPT` = true
-- `DB_TRUST_SERVER_CERTIFICATE` = false
-
-4) Push to `main`. The workflow will:
-- Install backend deps
-- Copy `public/` into `backend/public/` so the backend serves the static site
-- Zip and deploy the backend to the App Service
+Quick summary:
+1. Create Azure SQL Database and App Service
+2. Add GitHub secrets: `AZURE_WEBAPP_NAME` and `AZURE_WEBAPP_PUBLISH_PROFILE`
+3. Configure App Service environment variables (DB connection, admin password)
+4. Push to `main` - GitHub Actions deploys automatically
 
 After deploy, visit: `https://<your-app-service-name>.azurewebsites.net`
 
