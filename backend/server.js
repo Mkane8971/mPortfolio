@@ -190,7 +190,57 @@ app.get('/api/profile', async (req, res) => {
         try { row[f] = JSON.parse(row[f]); } catch (_) {}
       }
     });
-    res.json(row);
+
+    // Normalize shapes so the frontend rendering always works
+    const normalized = { ...row };
+
+    // Skills already an array; if string, coerce into single-item array
+    if (typeof normalized.skills === 'string') normalized.skills = [normalized.skills];
+
+    // Experience: map role/title and highlights/achievements to responsibilities
+    if (Array.isArray(normalized.experience)) {
+      normalized.experience = normalized.experience.map(job => ({
+        title: job.title || job.role || '',
+        company: job.company || job.org || job.organization || '',
+        period: job.period || job.dates || '',
+        location: job.location || job.site || '',
+        responsibilities: Array.isArray(job.responsibilities)
+          ? job.responsibilities
+          : Array.isArray(job.highlights)
+            ? job.highlights
+            : Array.isArray(job.achievements)
+              ? job.achievements
+              : []
+      }));
+    }
+
+    // Education: map program->degree and completion->status
+    if (Array.isArray(normalized.education)) {
+      normalized.education = normalized.education.map(e => ({
+        degree: e.degree || e.program || '',
+        institution: e.institution || '',
+        details: e.details || e.focus || '',
+        status: e.status || e.completion || ''
+      }));
+    }
+
+    // Projects: map stack/tech arrays to a string
+    if (Array.isArray(normalized.projects)) {
+      normalized.projects = normalized.projects.map(p => {
+        let tech = '';
+        if (typeof p.tech === 'string') tech = p.tech;
+        else if (Array.isArray(p.tech)) tech = p.tech.join(', ');
+        else if (Array.isArray(p.stack)) tech = p.stack.join(', ');
+        return {
+          name: p.name || '',
+          organization: p.organization || p.org || '',
+          tech,
+          description: p.description || ''
+        };
+      });
+    }
+
+    res.json(normalized);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });
