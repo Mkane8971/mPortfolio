@@ -27,9 +27,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install backend dependencies
-        working-directory: ${{ env.APP_DIR }}
         run: |
-          npm ci
+          npm ci --prefix backend
 
       - name: Include static frontend in backend folder
         run: |
