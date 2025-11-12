@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { OpenAI } from 'openai';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -349,7 +350,19 @@ Answering guidelines:
 });
 
 // Serve static files from public directory
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// In Azure we zip only the backend folder and copy the root-level public/ into backend/public.
+// Locally, public/ may live at the repo root. Support both layouts.
+const publicDirInBackend = path.join(__dirname, 'public');
+const publicDirAtRoot = path.join(__dirname, '..', 'public');
+const resolvedPublicDir = fs.existsSync(publicDirInBackend) ? publicDirInBackend : publicDirAtRoot;
+
+app.use(express.static(resolvedPublicDir));
+
+// Explicit root route to avoid "Cannot GET /" if static middleware misses
+app.get('/', (_req, res) => {
+  const indexPath = path.join(resolvedPublicDir, 'index.html');
+  res.sendFile(indexPath);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
