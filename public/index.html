@@ -1033,19 +1033,19 @@ async function fetchProfile() {
   // Skills
   const skillsUl = document.getElementById('skills');
   skillsUl.innerHTML = '';
-  (data.skills || []).forEach(skill => {
+  const meta = data.skills_meta || {};
+  (data.skills || []).forEach(name => {
     const li = document.createElement('li');
-    const isObj = typeof skill === 'object' && skill !== null;
-    const name = isObj ? (skill.name || '') : skill;
     li.textContent = name;
     li.className = 'skill-item';
-    if (isObj) {
-      const years = skill.years_experience != null ? `${skill.years_experience} year${skill.years_experience === 1 ? '' : 's'}` : '';
+    const s = meta[name];
+    if (s) {
+      const years = s.years_experience != null ? `${s.years_experience} year${s.years_experience === 1 ? '' : 's'}` : '';
       const parts = [];
-      if (skill.origin) parts.push(`<strong>Origin:</strong> ${skill.origin}`);
+      if (s.origin) parts.push(`<strong>Origin:</strong> ${s.origin}`);
       if (years) parts.push(`<strong>Experience:</strong> ${years}`);
-      if (skill.category) parts.push(`<strong>Category:</strong> ${skill.category}`);
-      if (skill.notes) parts.push(`<em>${skill.notes}</em>`);
+      if (s.category) parts.push(`<strong>Category:</strong> ${s.category}`);
+      if (s.notes) parts.push(`<em>${s.notes}</em>`);
       const html = `<strong>${name}</strong><br>${parts.join('<br>')}`;
       li.addEventListener('mouseenter', (e) => {
         tooltipEl.innerHTML = html;
