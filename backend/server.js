@@ -194,13 +194,17 @@ app.get('/api/profile', async (req, res) => {
     const toArr = (v) => Array.isArray(v) ? v : [];
     const normStr = (v) => (typeof v === 'string' ? v : (v == null ? '' : String(v)));
     row.skills = toArr(row.skills).filter(Boolean).map(normStr);
-    row.experience = toArr(row.experience).filter(Boolean).map(e => ({
-      title: normStr(e?.title),
-      company: normStr(e?.company),
-      period: normStr(e?.period),
-      location: normStr(e?.location),
-      responsibilities: toArr(e?.responsibilities).filter(Boolean).map(normStr)
-    }));
+    // Experience normalization: accept either {title,responsibilities} or legacy {role,highlights}
+    row.experience = toArr(row.experience).filter(Boolean).map(e => {
+      const responsibilitiesRaw = e?.responsibilities ?? e?.highlights ?? [];
+      return {
+        title: normStr(e?.title ?? e?.role),
+        company: normStr(e?.company),
+        period: normStr(e?.period),
+        location: normStr(e?.location ?? ''),
+        responsibilities: toArr(responsibilitiesRaw).filter(Boolean).map(normStr)
+      };
+    });
     // Prefer "details" but tolerate common variants from older data (detail, notes, note)
     row.education = toArr(row.education).filter(Boolean).map(e => {
       const detailsVal = e?.details ?? e?.detail ?? e?.notes ?? e?.note ?? '';
